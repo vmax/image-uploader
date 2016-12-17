@@ -8,7 +8,7 @@
         * imgup.net DONE
         * funkyimg.com DONE
         * swiftpic.org DONE
-        * imageupload.co.uk 
+        * imageupload.co.uk DONE
 """
 
 import argh
@@ -116,9 +116,33 @@ def swiftpic_uploader(filename):
     return soup.select('input')[1].get('value')
 
 
+def imageuploadcouk_uploader(filename):
+    from datetime import datetime
+    IMAGEUPLOADCOUK_URL = 'http://imageupload.co.uk'
+    
+    files = {
+         'source': (random_alphanumeric_string(), open(filename, 'rb'), 'image/png')
+    }
+
+    data = {
+        'action': 'upload',
+        'category_id': 'null',
+        'privacy': 'public',
+        'nsfw': '0',
+        'timestamp': str(int(datetime.now().timestamp()*1000)),
+        'type': 'file',
+    }
+
+    with requests.session() as session:
+        resp = session.get(IMAGEUPLOADCOUK_URL)
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        data['auth_token'] = soup.find(attrs={'name': 'auth_token'}).get('value')
+
+        resp = session.post(IMAGEUPLOADCOUK_URL + '/json', files = files, data = data)
+        return resp.json()['image']['image']['url']
+
 
 def upload(filename):
-    
     print("Uploading to imgur...")
     imgur_link = imgur_uploader(filename)
     if imgur_link:
@@ -152,7 +176,10 @@ def upload(filename):
     if swiftpic_link:
         print(swiftpic_link)
     
-
+    print("Uploading to imageuploadcouk...")
+    imageuploadcouk_link = imageuploadcouk_uploader(filename)
+    if imageuploadcouk_link:
+        print(imageuploadcouk_link)
 
 
 if __name__ == "__main__":
