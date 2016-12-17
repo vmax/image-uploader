@@ -7,7 +7,7 @@
         * imgsafe.org DONE
         * imgup.net DONE
         * funkyimg.com DONE
-        * swiftpic.org 
+        * swiftpic.org DONE
         * imageupload.co.uk 
 """
 
@@ -96,6 +96,27 @@ def funkyimg_uploader(filename):
             return input.get('value')
 
 
+def swiftpic_uploader(filename):
+    SWIFTPIC_URL = 'http://www.swiftpic.org/ajax-upload'
+    
+    # SwiftPic doesn't really care about MIME-type being correct; it doesn't accept empty one or wildcard
+    files = {
+         'up_file[]': (random_alphanumeric_string(), open(filename, 'rb'), 'image/png')
+    }
+
+    data = {
+        'terms': 'yes'
+    }
+
+    resp = requests.post(SWIFTPIC_URL, files = files, data = data)
+    url = resp.json()['redirect_to']
+    
+    resp = requests.get(url)
+    soup = BeautifulSoup(resp.text, 'html.parser')
+    return soup.select('input')[1].get('value')
+
+
+
 def upload(filename):
     
     print("Uploading to imgur...")
@@ -125,6 +146,11 @@ def upload(filename):
     funkyimg_link = funkyimg_uploader(filename)
     if funkyimg_link:
         print(funkyimg_link)
+    
+    print("Uploading to swiftpic...")
+    swiftpic_link = swiftpic_uploader(filename)
+    if swiftpic_link:
+        print(swiftpic_link)
     
 
 
