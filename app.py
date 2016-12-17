@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
     Purpose of the script is to upload an image file to the following services:
