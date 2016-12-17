@@ -6,7 +6,7 @@
         * imgur.com DONE
         * imgsafe.org DONE
         * imgup.net DONE
-        * funkyimg.com 
+        * funkyimg.com DONE
         * swiftpic.org 
         * imageupload.co.uk 
 """
@@ -17,6 +17,10 @@ import requests
 from bs4 import BeautifulSoup
 
 IMGUR_CLIENT_ID = "ac89bea92cad345"
+
+def random_alphanumeric_string(length=10):
+    import random
+    return ''.join(random.choice('0123456789ABCDEF') for i in range(length)) + '.png'
 
 def imgur_uploader(filename):
     client = ImgurClient(IMGUR_CLIENT_ID, None)
@@ -37,7 +41,7 @@ def postimage_uploader(filename):
     }
 
     files = {
-        'upload': (filename, open(filename, 'rb'), 'image/*')
+        'upload': (random_alphanumeric_string(), open(filename, 'rb'), 'image/*')
     }
 
     with requests.session() as session:
@@ -52,7 +56,7 @@ def imgsafe_uploader(filename):
     IMGSAFE_URL = 'http://imgsafe.org/upload'
 
     files = {
-        'files[]': (filename, open(filename, 'rb'), 'image/*')
+        'files[]': (random_alphanumeric_string(), open(filename, 'rb'), 'image/*')
     }
 
     resp = requests.post(IMGSAFE_URL, files=files)
@@ -66,15 +70,34 @@ def imgup_uploader(filename):
     }
 
     files = {
-        'image[image][]': (filename, open(filename, 'rb'), 'image/*')
+        'image[image][]': (random_alphanumeric_string(), open(filename, 'rb'), 'image/*')
     }
 
     resp = requests.post(IMGUP_URL, files = files, data = data)
     url = resp.json()['img_link'].replace('i.imgup', '.imgup')
     return url
 
+def funkyimg_uploader(filename):
+    import time
+    FUNKYIMG_URL = 'http://funkyimg.com/upload/'
+
+    files = {
+         'images': (random_alphanumeric_string(), open(filename, 'rb'), 'image/*')
+    }
+
+    r0 = requests.post(FUNKYIMG_URL, files=files)
+    jid = r0.json()['jid']
+    time.sleep(3) # give the service time to process the image
+    r1 = requests.get(FUNKYIMG_URL + '/check/' + jid)
+    soup = BeautifulSoup(r1.json()['bit'], 'html.parser')
+    inputs = soup.select('input')
+    for input in inputs:
+        if input.get('value').startswith('http://funkyimg.com/i/'):
+            return input.get('value')
+
+
 def upload(filename):
-    """"
+    
     print("Uploading to imgur...")
     imgur_link = imgur_uploader(filename)
     if imgur_link:
@@ -91,13 +114,19 @@ def upload(filename):
     imgsafe_link = imgsafe_uploader(filename)
     if imgsafe_link:
         print(imgsafe_link)
-    """
+    
 
     print("Uploading to imgup...")
     imgup_link = imgup_uploader(filename)
     if imgup_link:
-        print(imgup_link)
+        print(imgup_link) 
+
+    print("Uploading to funkyimg...")
+    funkyimg_link = funkyimg_uploader(filename)
+    if funkyimg_link:
+        print(funkyimg_link)
     
+
 
 
 if __name__ == "__main__":
