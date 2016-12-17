@@ -5,7 +5,7 @@
         * postimage.org DONE
         * imgur.com DONE
         * imgsafe.org DONE
-        * imgup.net 
+        * imgup.net DONE
         * funkyimg.com 
         * swiftpic.org 
         * imageupload.co.uk 
@@ -58,7 +58,20 @@ def imgsafe_uploader(filename):
     resp = requests.post(IMGSAFE_URL, files=files)
     return 'http:' + resp.json()['files'][0]['url']
 
+def imgup_uploader(filename):
+    IMGUP_URL = 'http://imgup.net/upload'
 
+    data = {
+        '_method': 'put'
+    }
+
+    files = {
+        'image[image][]': (filename, open(filename, 'rb'), 'image/*')
+    }
+
+    resp = requests.post(IMGUP_URL, files = files, data = data)
+    url = resp.json()['img_link'].replace('i.imgup', '.imgup')
+    return url
 
 def upload(filename):
     """"
@@ -67,16 +80,23 @@ def upload(filename):
     if imgur_link:
         print(imgur_link)
     
+    
     print("Uploading to postimage...")
     postimage_link = postimage_uploader(filename)
+    
     if postimage_link:
         print(postimage_link)
-    """
-
+    
     print("Uploading to imgsafe...")
     imgsafe_link = imgsafe_uploader(filename)
     if imgsafe_link:
         print(imgsafe_link)
+    """
+
+    print("Uploading to imgup...")
+    imgup_link = imgup_uploader(filename)
+    if imgup_link:
+        print(imgup_link)
     
 
 
