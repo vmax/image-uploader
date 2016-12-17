@@ -12,7 +12,6 @@
 """
 
 import argh
-from imgurpython import ImgurClient
 import requests
 from bs4 import BeautifulSoup
 import sys
