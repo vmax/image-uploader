@@ -4,7 +4,7 @@
     Purpose of the script is to upload an image file to the following services:
         * postimage.org DONE
         * imgur.com DONE
-        * imgsafe.org 
+        * imgsafe.org DONE
         * imgup.net 
         * funkyimg.com 
         * swiftpic.org 
@@ -48,6 +48,17 @@ def postimage_uploader(filename):
         soup = BeautifulSoup(r2.text, "html.parser")
         return soup.select('img')[0].get('src')
 
+def imgsafe_uploader(filename):
+    IMGSAFE_URL = 'http://imgsafe.org/upload'
+
+    files = {
+        'files[]': (filename, open(filename, 'rb'), 'image/*')
+    }
+
+    resp = requests.post(IMGSAFE_URL, files=files)
+    return 'http:' + resp.json()['files'][0]['url']
+
+
 
 def upload(filename):
     """"
@@ -55,11 +66,18 @@ def upload(filename):
     imgur_link = imgur_uploader(filename)
     if imgur_link:
         print(imgur_link)
-    """
+    
     print("Uploading to postimage...")
     postimage_link = postimage_uploader(filename)
     if postimage_link:
         print(postimage_link)
+    """
+
+    print("Uploading to imgsafe...")
+    imgsafe_link = imgsafe_uploader(filename)
+    if imgsafe_link:
+        print(imgsafe_link)
+    
 
 
 if __name__ == "__main__":
