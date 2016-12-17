@@ -20,19 +20,36 @@ import csv
 
 csv_stdout = csv.writer(sys.stdout)
 
-IMGUR_CLIENT_ID = "ac89bea92cad345"
-
 def random_alphanumeric_string(length=10):
     import random
     return ''.join(random.choice('0123456789ABCDEF') for i in range(length)) + '.png'
 
 def imgur_uploader(filename):
-    client = ImgurClient(IMGUR_CLIENT_ID, None)
-    try:
-        result = client.upload_from_path(filename)
-        return result['link']
-    except Exception as e:
-        print("imgur upload failed: " + str(e))
+    IMGUR_URL = 'http://imgur.net'
+
+    headers = {
+        'Origin': IMGUR_URL.replace('.net', '.com'),
+        'Referer': IMGUR_URL.replace('.net', '.com'),
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
+        'X-Requested-With': 'XMLHttpRequest'
+    }
+
+    files = {
+         'Filedata': (random_alphanumeric_string(), open(filename, 'rb'), 'image/png')
+    }
+
+    with requests.session() as session:
+        r0 = session.get(IMGUR_URL, headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'})
+        r1 = session.post(IMGUR_URL.replace('.net', '.com') + '/upload/checkcaptcha', data = {'create_album': 'true', 'total_uploads': 1}, headers=headers)
+        album_id = r1.json()['data']['new_album_id']
+
+        data = {
+            'new_album_id' : album_id
+        }
+
+        r2 = session.post(IMGUR_URL.replace('.net', '.com') + '/upload', files = files, data = data, headers = headers)
+        return 'http://i.imgur.com/' + r2.json()['data']['hash'] + '.png'
+
 
 
 def postimage_uploader(filename):
