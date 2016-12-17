@@ -15,6 +15,10 @@ import argh
 from imgurpython import ImgurClient
 import requests
 from bs4 import BeautifulSoup
+import sys
+import csv
+
+csv_stdout = csv.writer(sys.stdout)
 
 IMGUR_CLIENT_ID = "ac89bea92cad345"
 
@@ -142,44 +146,23 @@ def imageuploadcouk_uploader(filename):
         return resp.json()['image']['image']['url']
 
 
+uploaders = {
+    'imgur.com' : imgur_uploader,
+    'postimage.org' : postimage_uploader,
+    'imgsafe.org' : imgsafe_uploader,
+    'imgup.net' : imgup_uploader,
+    'funkyimg.com' : funkyimg_uploader,
+    'swiftpic.org' : swiftpic_uploader,
+    'imageupload.co.uk' : imageuploadcouk_uploader
+}
+
+
 def upload(filename):
-    print("Uploading to imgur...")
-    imgur_link = imgur_uploader(filename)
-    if imgur_link:
-        print(imgur_link)
-    
-    
-    print("Uploading to postimage...")
-    postimage_link = postimage_uploader(filename)
-    
-    if postimage_link:
-        print(postimage_link)
-    
-    print("Uploading to imgsafe...")
-    imgsafe_link = imgsafe_uploader(filename)
-    if imgsafe_link:
-        print(imgsafe_link)
-    
-
-    print("Uploading to imgup...")
-    imgup_link = imgup_uploader(filename)
-    if imgup_link:
-        print(imgup_link) 
-
-    print("Uploading to funkyimg...")
-    funkyimg_link = funkyimg_uploader(filename)
-    if funkyimg_link:
-        print(funkyimg_link)
-    
-    print("Uploading to swiftpic...")
-    swiftpic_link = swiftpic_uploader(filename)
-    if swiftpic_link:
-        print(swiftpic_link)
-    
-    print("Uploading to imageuploadcouk...")
-    imageuploadcouk_link = imageuploadcouk_uploader(filename)
-    if imageuploadcouk_link:
-        print(imageuploadcouk_link)
+    csv_stdout.writerow(['Filename', 'Service', 'Link'])
+    for service in uploaders:
+        uploader = uploaders[service]
+        link = uploader(filename)
+        csv_stdout.writerow([filename, service, link])
 
 
 if __name__ == "__main__":
